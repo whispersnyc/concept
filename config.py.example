@@ -1,0 +1,4 @@
+# Enable Developer Mode then  right-click channel > Copy Channel ID
+CHANNELS = [1234567890, 1234567890]
+# [YourBot > Bot > Token] in discord.com/developers/applications
+TOKEN = "XXXXXXXXXXXXXXXXXXXXXX"
