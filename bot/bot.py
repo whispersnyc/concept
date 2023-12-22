@@ -1,25 +1,25 @@
-from concept import Concept
-from config import TOKEN, CHANNELS
+from bot.concept import Concept
+from bot.config import TOKEN, CHANNELS
 import discord
 
 intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
 
-concepts = {}
+concepts, sources = {}, []
 
 
 async def get_first_message(thread):
-    async for post in thread.history(limit=None): pass
-    return post
+    # loop to the first message then return it
+    async for msg in thread.history(limit=None): pass
+    return msg.content
 
 
-async def get_source(post):
-    try:
+def get_source(post):
+    try: # find <#...> at start (text channel id)
         if (txt := post.content.strip()).startswith('<#'):
             return int(txt[2:txt.index('>')])
-    except Exception:
-        return
+    except Exception: return
 
 
 async def check_channels():
@@ -28,20 +28,22 @@ async def check_channels():
         if channel is None:
             print(f"Could not find channel {channel_id}")
             continue
-
+        
         # project posts
         if isinstance(channel, discord.ForumChannel):
             for thread in channel.threads:
                 post = await get_first_message(thread)
                 source = get_source(post)
-                concepts[thread.id] = Concept(thread.id, channel.category, channel.name, thread.name, post, source)
-                print(concepts[thread.id])
- 
+
+                concepts[thread.id] = Concept(thread, thread.id, channel.category.name, channel.name, thread.name, post, source)
+                if source: sources.append(source)
+
         # source threads
         elif isinstance(channel, discord.TextChannel):
             for thread in channel.threads:
-                concepts[thread.id] = Concept(thread.id, channel.category, channel.name, thread.name)
-                print(concepts[thread.id])
+                concepts[thread.id] = Concept(thread, thread.id, channel.category.name, channel.name, thread.name)
+    
+    print("Done processing")
 
 
 @client.event
@@ -50,5 +52,4 @@ async def on_ready():
     await check_channels()
 
 
-if __name__ == "__main__":
-    client.run(TOKEN)
+def run_bot(): client.run(TOKEN)
