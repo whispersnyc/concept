@@ -9,4 +9,8 @@ class Concept:
         self.source = source
 
     def __str__(self):
-        return f"[{self.category} >> #{self.channel}] {"POST" if self.post else "THREAD"} {self.id}: {self.name} "
+        ret = f"[{self.category} >> #{self.channel}] {"POST" if self.post else "THREAD"} "
+        ret += f"{self.id}: {self.name} "
+        if self.source: ret += f"(src: {self.source})"
+
+        return ret

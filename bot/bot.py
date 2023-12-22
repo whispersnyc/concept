@@ -17,9 +17,9 @@ async def get_first_message(thread):
 
 def get_source(post):
     try: # find <#...> at start (text channel id)
-        if (txt := post.content.strip()).startswith('<#'):
+        if (txt := post.strip()).startswith('<#'):
             return int(txt[2:txt.index('>')])
-    except Exception: return
+    except Exception as e: return
 
 
 async def check_channels():
@@ -28,7 +28,7 @@ async def check_channels():
         if channel is None:
             print(f"Could not find channel {channel_id}")
             continue
-        
+
         # project posts
         if isinstance(channel, discord.ForumChannel):
             for thread in channel.threads:

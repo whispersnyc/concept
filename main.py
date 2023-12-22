@@ -16,13 +16,15 @@ def index():
 def channel(id):
     if (id := int(id)) in concepts:
         concept = concepts[id]
-        return f"{concept}<br><br>--------<br><br>{
-            concept.post.replace('<','').replace('>','').replace('\n','<br>')}"
-        #concept = concepts[id]
-        #ret = f"{concept}<br>---<br>{concept.post}<br>"
-        #if concept.source and concept.source in concepts:
-        #    ret += f"---<br>{concepts[concept.source]}"
-        #return ret
+        ret = str(concept)
+
+        if concept.post:
+            ret += f"<br><br>----post----<br><br>{
+                concept.post.replace('<','').replace('>','').replace('\n','<br>')}"
+        if concept.source in concepts:
+            source = concepts[concept.source]
+            ret += '<br><br>----src-----<br><br>'+str(source)
+        return ret
 
 
 def run_webui():
