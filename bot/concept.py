@@ -22,8 +22,10 @@ class Concept:
         return msg.content
 
 
-    def parse_source(self, post):
-        try: # find <#...> at start (text channel id)
-            if (txt := post.strip()).startswith('<#'):
-                return int(txt[2:txt.index('>')])
+    def parse_source(self):
+        try: # find/remove <#...> in post (text channel id)
+            if (txt := self.post.strip()).startswith('<#'):
+                source, txt = txt[2:].split('>', 1)
+                source, self.post = int(source), txt.strip()
+                return source
         except Exception as e: return

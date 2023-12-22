@@ -21,7 +21,7 @@ async def check_channels():
             concept = Concept(thread)
             if isinstance(channel, discord.ForumChannel):
                 concept.post = await concept.get_first_message(thread)
-                concept.source = concept.parse_source(concept.post)
+                concept.source = concept.parse_source()
                 if concept.source: sources.append(concept.source)
             concepts[thread.id] = concept
     

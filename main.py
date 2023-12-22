@@ -1,6 +1,7 @@
 import threading
 from bottle import run as run_web, route
 from bot.bot import run_bot, concepts, sources
+from markdown import markdown
 
 @route('/')
 def index():
@@ -12,19 +13,20 @@ def index():
     return '<br>'.join(display)
 
 
-@route('/id/<id>')
+@route('/id/<id:int>')
 def channel(id):
-    if (id := int(id)) in concepts:
+    if id in concepts:
         concept = concepts[id]
-        ret = str(concept)
+        ret = {"parent": str(concept)}
 
         if concept.post:
-            ret += f"<br><br>----post----<br><br>{
-                concept.post.replace('<','').replace('>','').replace('\n','<br>')}"
+            ret["post"] = markdown(concept.post)
         if concept.source in concepts:
             source = concepts[concept.source]
-            ret += '<br><br>----src-----<br><br>'+str(source)
-        return ret
+            ret["source"] = str(source)
+        
+        return [f"------{k}------<br><br>{v}<br><br>" \
+                for (k,v) in ret.items()]
 
 
 def run_webui():
