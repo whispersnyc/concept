@@ -17,11 +17,10 @@ async def check_channels():
             continue
 
         for thread in channel.threads:
-            concept = concepts[thread.id] = Concept(thread)
-            if isinstance(channel, discord.ForumChannel):
-                concept.post = await concept.get_first_message()
-                concept.source = concept.parse_source()
-                if concept.source: sources.append(concept.source)
+            forum = isinstance(channel, discord.ForumChannel)
+            concept = concepts[thread.id] = \
+                await Concept.create(thread, forum)
+            if concept.source: sources.append(concept.source)
 
 
 @client.event

@@ -7,12 +7,13 @@ def index():
     display = []
     for c in concepts.values():
         if c.id not in sources:
-            txt = c.category + ' :: ' + c.name
-            display.append(f"<a href=\"id/{c.id}\">{txt}</a>")
+            display.append(f"<a href=\"{c.id}\">\
+                {c.category} :: {c.name}\
+            </a>")
     return '<br>'.join(display)
 
 
-@route('/id/<id:int>')
+@route('/<id:int>')
 def channel(id):
     if id in concepts:
         concept = concepts[id]
