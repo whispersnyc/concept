@@ -19,7 +19,7 @@ class Concept:
     async def get_first_message(self, thread):
         # loop to the first message then return it
         async for msg in thread.history(limit=None): pass
-        return msg.content
+        return msg
 
 
     def parse_source(self):
