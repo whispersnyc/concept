@@ -7,7 +7,6 @@ intents.message_content = True
 client = discord.Client(intents=intents)
 
 concepts, sources = {}, []
-cache = {} # read catch
 
 
 async def check_channels():
@@ -18,25 +17,18 @@ async def check_channels():
             continue
 
         for thread in channel.threads:
-            concept, id = Concept(thread), thread.id
+            concept = concepts[thread.id] = Concept(thread)
             if isinstance(channel, discord.ForumChannel):
-                if id in cache:
-                    concept.post = await client.get_channel(id).\
-                        fetch_message(cache[id]).content
-                else:
-                    msg = await concept.get_first_message(thread)
-                    cache[id], concept.post = msg.id, msg.content
+                concept.post = await concept.get_first_message()
                 concept.source = concept.parse_source()
                 if concept.source: sources.append(concept.source)
-            concepts[id] = concept
 
 
 @client.event
 async def on_ready():
     print(f'We have logged in as {client.user}')
     await check_channels()
-    print("Done processing", cache)
-    # write cache
+    print("Done processing")
 
 
 def run_bot(): client.run(TOKEN)

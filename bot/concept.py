@@ -16,10 +16,8 @@ class Concept:
         return ret
     
 
-    async def get_first_message(self, thread):
-        # loop to the first message then return it
-        async for msg in thread.history(limit=None): pass
-        return msg
+    async def get_first_message(self):
+        return (await self.thread.fetch_message(self.id)).content
 
 
     def parse_source(self):
