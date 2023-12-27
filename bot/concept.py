@@ -5,7 +5,10 @@ class Concept:
         self.name = thread.name
         self.channel = thread.parent.name
         self.category = thread.parent.category.name
+
         self.post, self.source = None, None
+
+        self.links, self.media = {}, {}
 
     @classmethod
     async def create(cls, thread, forum):
@@ -20,6 +23,18 @@ class Concept:
               f" {self.id}: {self.name} "
         if self.source: ret += f"(src: {self.source})"
 
+        if self.post: ret += '\n\n## Post\n'+str(self.post)
+        if self.links: ret += '\n\n## Links\n'+str(self.links)
+        if self.media:
+            ret += '\n\n## Media\n<table>\n<tr>\n'
+            count = 0
+            for sublist in self.media.values():
+                for item in sublist:
+                    if count % 3 == 0 and count != 0: # between rows
+                        ret += '</tr>\n<tr>\n'
+                    ret += f'<td><img src="{item}" width="200"/></td>\n'
+                    count += 1
+            ret += '</tr>\n</table>\n'
         return ret
     
 

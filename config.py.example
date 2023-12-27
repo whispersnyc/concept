@@ -7,6 +7,6 @@ TOKEN = "XXXXXXXXXXXXXXXXXXXXXX"
 CHANNELS = [1234567890, 1234567890]
 
 
-## Markdown export path
+## Markdown export
 
 EXPORT = "D:/Path/To/Folder"

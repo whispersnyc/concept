@@ -17,13 +17,11 @@ def index():
 def channel(id):
     if id in concepts:
         concept = concepts[id]
-        ret = {"parent": str(concept)}
-
-        #if concept.post:
-        #    ret["post"] = markdown(concept.post)
-        #if concept.source in concepts:
-        #    source = concepts[concept.source]
-        #    ret["source"] = str(source)
+        ret = {"parent": markdown(str(concept))}
+        
+        if concept.source in concepts:
+            source = concepts[concept.source]
+            ret["source"] = markdown(str(source))
         
         return [f"------{k}------<br><br>{v}<br><br>" \
                 for (k,v) in ret.items()]
