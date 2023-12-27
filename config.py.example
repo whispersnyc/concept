@@ -1,0 +1,12 @@
+## Discord Bot configuration
+
+# [YourBot > Bot > Token] in discord.com/developers/applications
+TOKEN = "XXXXXXXXXXXXXXXXXXXXXX"
+
+# Enable Developer Mode then  right-click channel > Copy Channel ID
+CHANNELS = [1234567890, 1234567890]
+
+
+## Markdown export path
+
+EXPORT = "D:/Path/To/Folder"

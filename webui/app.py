@@ -19,11 +19,11 @@ def channel(id):
         concept = concepts[id]
         ret = {"parent": str(concept)}
 
-        if concept.post:
-            ret["post"] = markdown(concept.post)
-        if concept.source in concepts:
-            source = concepts[concept.source]
-            ret["source"] = str(source)
+        #if concept.post:
+        #    ret["post"] = markdown(concept.post)
+        #if concept.source in concepts:
+        #    source = concepts[concept.source]
+        #    ret["source"] = str(source)
         
         return [f"------{k}------<br><br>{v}<br><br>" \
                 for (k,v) in ret.items()]
