@@ -38,12 +38,10 @@ async def process_channels():
             async for msg in thread.history(limit=None):
                 process_msg(concept, msg)
 
-    # second pass for post-thread connection
-    for concept in concepts:
-        if EXPORT and exists(EXPORT) and concept not in sources:
-            fn = f"{EXPORT}/{concept.id}.md"
-            with open(fn, "w", encoding='utf-8') as fl:
-                if concept.post: fl.write(str(concept))
+            if EXPORT and exists(EXPORT):
+                fn = f"{EXPORT}/{thread.id}.md"
+                with open(fn, "w", encoding='utf-8') as fl:
+                    fl.write(str(concept))
 
 
 @client.event

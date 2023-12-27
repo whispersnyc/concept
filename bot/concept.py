@@ -9,6 +9,7 @@ class Concept:
         self.post, self.source = None, None
 
         self.links, self.media = {}, {}
+        self.md = None
 
     @classmethod
     async def create(cls, thread, forum):
@@ -18,13 +19,19 @@ class Concept:
 
 
     def __str__(self):
+        if self.md: return self.md
+
         ret = f"[{self.category} >> #{self.channel}] " + \
                 ("POST" if self.post else "THREAD") + \
               f" {self.id}: {self.name} "
-        if self.source: ret += f"(src: {self.source})"
+        if self.source: ret += f"\n\nSource Thread: [[{self.source}]]"
 
         if self.post: ret += '\n\n## Post\n'+str(self.post)
-        if self.links: ret += '\n\n## Links\n'+str(self.links)
+        if self.links:
+            ret += '\n\n## Links\n'
+            for sublist in self.links.values():
+                for item in sublist:
+                    ret += f"- [Title of {item}]({item})\n"
         if self.media:
             ret += '\n\n## Media\n<table>\n<tr>\n'
             count = 0
@@ -35,7 +42,9 @@ class Concept:
                     ret += f'<td><img src="{item}" width="200"/></td>\n'
                     count += 1
             ret += '</tr>\n</table>\n'
-        return ret
+        
+        self.md = ret
+        return self.md
     
 
     async def parse_post(self, thread, id):
