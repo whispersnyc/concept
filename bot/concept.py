@@ -1,22 +1,35 @@
-from bot.links import get_title
-
 class Concept:
-    def __init__(self, thread):
+    """Represents a concept with links and media from a thread."""
+
+    def __init__(self, thread,id, name, channel, category, post=None, source=None):
         self.thread = thread
-        self.id = thread.id
-        self.name = thread.name
-        self.channel = thread.parent.name
-        self.category = thread.parent.category.name
+        self.id = id
+        self.name = name
+        self.channel = channel
+        self.category = category
 
-        self.post, self.source = None, None
+        self.post, self.source = post, source
 
-        self.links, self.media = {}, {}
+        self.sites, self.media = [], []
         self._str = None
 
+
     @classmethod
-    async def create(cls, thread, forum):
-        concept = cls(thread)
-        if forum: await concept.parse_post(thread, concept.id)
+    async def Discord_thread(cls, thread, from_forum):
+        """Initialize Concept from Discord thread"""
+
+        concept = cls(thread, thread.id, thread.name,
+                      thread.parent.name, thread.parent.category.name)
+
+        if from_forum: # fetch and set post/source
+            concept.post = (await thread.fetch_message(thread.id)).content
+            try: # find/remove <#...> in post (text channel id)
+                if (txt := concept.post.strip()).startswith('<#'):
+                    source, txt = txt[2:].split('>', 1)
+                    source, concept.post = int(source), txt.strip()
+                    concept.source = source
+            except Exception as e: print(thread.name, e)
+        
         return concept
 
 
@@ -29,31 +42,19 @@ class Concept:
         if self.source: ret += f"\n\nSource Thread: [[{self.source}]]"
 
         if self.post: ret += '\n\n## Post\n'+str(self.post)
-        if self.links:
-            ret += '\n\n## Links\n'
-            for sublist in self.links.values():
-                for item in sublist:
-                    ret += f"- [{get_title(item)}]({item})\n"
+        if self.sites:
+            ret += '\n\n## Sites\n'
+            for link in self.sites:
+                ret += f"- [{link.title}]({link})\n"
         if self.media:
             ret += '\n\n## Media\n<table>\n<tr>\n'
             count = 0
-            for sublist in self.media.values():
-                for item in sublist:
-                    if count % 3 == 0 and count != 0: # between rows
-                        ret += '</tr>\n<tr>\n'
-                    ret += f'<td><img src="{item}" width="200"/></td>\n'
-                    count += 1
+            for link in self.media:
+                if count % 3 == 0 and count != 0: # between rows
+                    ret += '</tr>\n<tr>\n'
+                ret += f'<td><img src="{link}" width="200"/></td>\n'
+                count += 1
             ret += '</tr>\n</table>\n'
         
         self._str = ret
-        return self._str
-    
-
-    async def parse_post(self, thread, id):
-        self.post = (await thread.fetch_message(id)).content
-        try: # find/remove <#...> in post (text channel id)
-            if (txt := self.post.strip()).startswith('<#'):
-                source, txt = txt[2:].split('>', 1)
-                source, self.post = int(source), txt.strip()
-                self.source = source
-        except Exception as e: return
+        return ret

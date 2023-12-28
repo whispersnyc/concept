@@ -1,12 +1,14 @@
 from bottle import run as run_web, route
-from bot.bot import concepts, sources
+from bot.bot import concepts, source_ids
 from markdown import markdown
+
+complete = []
 
 @route('/')
 def index():
     display = []
     for c in concepts.values():
-        if c.id not in sources:
+        if c.id not in source_ids:
             display.append(f"<a href=\"{c.id}\">\
                 {c.category} :: {c.name}\
             </a>")

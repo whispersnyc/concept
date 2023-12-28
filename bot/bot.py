@@ -2,24 +2,21 @@ from bot.concept import Concept
 from config import *
 import discord
 from os.path import exists, join
-from urlextract import URLExtract
+from bot.hyperlink import Hyperlink, extractor
 
-extractor = URLExtract()
+
 intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
 
-concepts, sources = {}, []
+concepts, source_ids = {}, []
 
 
-def add(dict, key, value): dict.setdefault(key, []).append(value)
-def process_msg(concept, msg):
-    for url in extractor.find_urls(msg.content) + msg.attachments:
-        if isinstance(url, discord.Attachment): url = url.url
-        if any([e in url for e in (".png", ".jpg", ".gif", ".mp4", ".mp3", ".ogg")]):
-            add(concept.media, msg.id, url)
-        else:
-            add(concept.links, msg.id, url)
+def sort_link(concept, link):
+    if link.type == "media":
+        concept.media.append(link)
+    else:
+        concept.sites.append(link)
 
 
 async def process_channels():
@@ -32,11 +29,15 @@ async def process_channels():
         for thread in channel.threads:
             forum = isinstance(channel, discord.ForumChannel)
             concept = concepts[thread.id] = \
-                await Concept.create(thread, forum)
-            if concept.source: sources.append(concept.source)
+                await Concept.Discord_thread(thread, forum)
+            if concept.source: source_ids.append(concept.source)
 
             async for msg in thread.history(limit=None):
-                process_msg(concept, msg)
+                for url in extractor(msg.content):
+                    sort_link(concept, Hyperlink(url))
+                for fl in msg.attachments:
+                    sort_link(concept,
+                        Hyperlink(fl.url, fl.filename, fl.content_type))
 
             if EXPORT and exists(EXPORT):
                 fn = f"{EXPORT}/{thread.id}.md"
@@ -51,4 +52,5 @@ async def on_ready():
     print("Done processing")
 
 
-def run_bot(): client.run(TOKEN)
+def run_bot():
+    client.run(TOKEN)

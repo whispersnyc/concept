@@ -1,3 +1,6 @@
+HTTP_allowed = True
+
+
 ## Discord Bot configuration
 
 # [YourBot > Bot > Token] in discord.com/developers/applications
