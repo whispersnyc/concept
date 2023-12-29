@@ -5,6 +5,7 @@ from urllib3.util.retry import Retry
 from bs4 import BeautifulSoup
 from urlextract import URLExtract
 from config import HTTP_allowed
+import mimetypes
 
 extractor = URLExtract().find_urls
 
@@ -51,6 +52,5 @@ class Hyperlink():
             return self.url
     
     def get_type(self):
-        if any([e in self.url for e in (".mp4", ".mp3", ".ogg", ".png", ".jpg", ".webp")]):
-            return "media"
-        return "site"
+        type, encoding = mimetypes.guess_type(self.url)
+        return type if type else "site"

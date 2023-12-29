@@ -19,14 +19,24 @@ def index():
 def channel(id):
     if id in concepts:
         concept = concepts[id]
-        ret = {"parent": markdown(str(concept))}
-        
         if concept.source in concepts:
             source = concepts[concept.source]
-            ret["source"] = markdown(str(source))
-        
-        return [f"------{k}------<br><br>{v}<br><br>" \
-                for (k,v) in ret.items()]
+            return f"""
+            <div style="display: flex; height: 100vh;">
+                <div style="width: 50%; overflow: auto;">
+                    ------parent------<br><br>{markdown(str(concept))}<br><br>
+                </div>
+                <div style="width: 50%; overflow: auto;">
+                    ------source------<br><br>{markdown(str(source))}<br><br>
+                </div>
+            </div>
+            """
+        else:
+            return f"""
+            <div style="height: 100vh; overflow: auto;">
+                ------parent------<br><br>{markdown(str(concept))}<br><br>
+            </div>
+            """
 
 
 def run_webui():

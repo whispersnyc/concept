@@ -52,7 +52,10 @@ class Concept:
             for link in self.media:
                 if count % 3 == 0 and count != 0: # between rows
                     ret += '</tr>\n<tr>\n'
-                ret += f'<td><img src="{link}" width="200"/></td>\n'
+                if link.type.startswith("image/"):
+                    ret += f'<td><img src="{link}" width="200"/></td>\n'
+                elif link.type.startswith("video/"):
+                    ret += f'<td><video src="{link}" width="200" controls></video></td>\n'
                 count += 1
             ret += '</tr>\n</table>\n'
         

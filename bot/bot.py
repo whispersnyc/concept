@@ -13,7 +13,7 @@ concepts, source_ids = {}, []
 
 
 def sort_link(concept, link):
-    if link.type == "media":
+    if link.type.startswith(("image/", "video/")):
         concept.media.append(link)
     else:
         concept.sites.append(link)
