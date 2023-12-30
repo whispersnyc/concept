@@ -24,17 +24,17 @@ def channel(id):
             return f"""
             <div style="display: flex; height: 100vh;">
                 <div style="width: 50%; overflow: auto;">
-                    ------parent------<br><br>{markdown(str(concept))}<br><br>
+                    ------parent------<br><br>{markdown(str(concept))}
                 </div>
                 <div style="width: 50%; overflow: auto;">
-                    ------source------<br><br>{markdown(str(source))}<br><br>
+                    ------source------<br><br>{markdown(str(source))}
                 </div>
             </div>
             """
         else:
             return f"""
             <div style="height: 100vh; overflow: auto;">
-                ------parent------<br><br>{markdown(str(concept))}<br><br>
+                ------parent------<br><br>{markdown(str(concept))}
             </div>
             """
 

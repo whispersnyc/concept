@@ -9,7 +9,6 @@ import mimetypes
 
 extractor = URLExtract().find_urls
 
-# media type if file, title/filename, parent message content/id (caption/jump-to link), $tag
 
 class Hyperlink():
     def __init__(self, url, title=None, type=None):
@@ -21,14 +20,17 @@ class Hyperlink():
 
 
     def get_title(self):
+        """Fetches the title of the webpage at the URL."""
         if not self.url.startswith(('http://', 'https://')):
             self.url = 'https://' + self.url
 
         session = Session()
-        retries = Retry(total=0,
-                        backoff_factor=0,
-                        status_forcelist=[ 500, 502, 503, 504 ],
-                        allowed_methods=["HEAD", "GET", "OPTIONS"])
+        retries = Retry(
+            total=0,
+            backoff_factor=0,
+            status_forcelist=[500, 502, 503, 504],
+            allowed_methods=["HEAD", "GET", "OPTIONS"]
+        )
         adapter = HTTPAdapter(max_retries=retries)
         session.mount("https://", adapter)
         session.mount("http://", adapter)
@@ -39,17 +41,13 @@ class Hyperlink():
             return soup.title.string if soup.title else self.url
         except SSLError:
             if HTTP_allowed:
-                self.url = self.url.replace('https://' , 'http://')
+                self.url = self.url.replace('https://', 'http://')
                 try:
                     response = session.get(self.url)
                     soup = BeautifulSoup(response.text, 'html.parser')
                     return soup.title.string if soup.title else self.url
                 except Exception:
                     return self.url
-            else:
-                return self.url
-        except Exception:
-            return self.url
     
     def get_type(self):
         type, encoding = mimetypes.guess_type(self.url)
