@@ -22,8 +22,6 @@ class Concept:
 
     def __str__(self):
         """Generate string of Concept contents as Markdown"""
-        if self._str: return self._str
-
         ret = f"[{self.category} >> #{self.channel}] "
         ret += "POST" if self.post else "THREAD"
         ret += f" {self.id}: {self.name} "
@@ -39,7 +37,6 @@ class Concept:
         if self.media:
             ret += self._generate_media_table()
         
-        if (self.sites or self.media): self._str = ret
         return ret
 
 
