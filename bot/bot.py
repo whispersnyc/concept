@@ -2,7 +2,7 @@ from concept import Concept
 from config import *
 import discord
 from os.path import exists, join
-from bot.hyperlink import Hyperlink, extractor
+from hyperlink import Hyperlink, extractor
 
 
 intents = discord.Intents.default()
@@ -14,8 +14,8 @@ concepts, source_ids = {}, []
 
 async def create_concept(thread, from_forum):
     """Initialize Concept from Discord thread"""
-    concept = Concept(thread, thread.id, thread.name,
-                      thread.parent.name, thread.parent.category.name)
+    concept = Concept(thread.id, thread.name, thread.parent.name,
+                      thread.parent.category.name)
 
     if from_forum: # fetch and set post/source
         concept.post = (await thread.fetch_message(thread.id)).content

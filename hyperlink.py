@@ -11,10 +11,11 @@ extractor = URLExtract().find_urls
 
 
 class Hyperlink():
-    def __init__(self, url, title=None, type=None):
+    def __init__(self, url, title=None, type=None, source=None):
         self.url = url
         self.title = title if title else self.get_title()
         self.type = type if type else self.get_type()
+        self.source = source
 
     def __str__(self): return self.url
 

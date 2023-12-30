@@ -2,16 +2,16 @@ class Concept:
     """Represents a concept with links and media from a thread."""    
 
 
-    def __init__(self, thread, id, name, channel, category,
+    def __init__(self, id, name, channel, category,
                  post=None, source=None, sites=None, media=None):
         if not sites: sites = []
         if not media: media = []
 
-        self.thread = thread
         self.id = id
         self.name = name
         self.channel = channel
         self.category = category
+        
         self.post = post
         self.source = source
         self.sites = sites
