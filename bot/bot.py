@@ -31,6 +31,13 @@ async def create_concept(thread, from_forum):
         except Exception as e: print(thread.name, e)
     
     return concept
+    
+
+def export(concept):
+    if EXPORT and exists(EXPORT):
+        fn = join(EXPORT, str(concept.id) + ".md")
+        with open(fn, "w", encoding='utf-8') as fl:
+            fl.write(str(concept))
 
 
 def sort_link(concept, link):
@@ -52,14 +59,10 @@ async def process_messages(concept=None, thread=None, id=None):
         for fl in msg.attachments:
             sort_link(concept, Hyperlink(fl.url,
                 fl.filename, fl.content_type, msg.id))
-    
-    if EXPORT and exists(EXPORT):
-        fn = join(EXPORT, str(concept.id) + ".md")
-        with open(fn, "w", encoding='utf-8') as fl:
-            fl.write(str(concept))
+    export(concept)
 
 
-async def process_all_channels():
+async def process_all_channels(lazy_load=LAZY_LOADING):
     """Processes all channels and sorts their links."""
     for channel_id in CHANNELS:
         channel = client.get_channel(channel_id)
@@ -73,8 +76,9 @@ async def process_all_channels():
                 await create_concept(thread, forum))
             if concept.source:
                 source_ids.append(concept.source)
-            if not lazy_loading:
+            if not lazy_load:
                 process_messages(concept, thread)
+            export(concept)
     
     print("Done processing all channels.")
 
@@ -87,7 +91,7 @@ async def check_queue():
             if message == "refresh_concept":
                 concept_id = int(data)
                 await process_messages(id=concept_id)
-                if lazy_loading: refresh(concept_id)
+                if LAZY_LOADING: refresh(concept_id)
         await sleep(1)
 
 
