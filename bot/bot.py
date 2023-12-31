@@ -52,6 +52,11 @@ async def process_messages(concept=None, thread=None, id=None):
         for fl in msg.attachments:
             sort_link(concept, Hyperlink(fl.url,
                 fl.filename, fl.content_type, msg.id))
+    
+    if EXPORT and exists(EXPORT):
+        fn = join(EXPORT, str(concept.id) + ".md")
+        with open(fn, "w", encoding='utf-8') as fl:
+            fl.write(str(concept))
 
 
 async def process_all_channels():
@@ -63,7 +68,6 @@ async def process_all_channels():
             continue
 
         for thread in channel.threads:
-            # Initialize Concept
             forum = isinstance(channel, discord.ForumChannel)
             concept = concepts[thread.id] = (
                 await create_concept(thread, forum))
@@ -71,12 +75,7 @@ async def process_all_channels():
                 source_ids.append(concept.source)
             if not lazy_loading:
                 process_messages(concept, thread)
-
-            # Export to file
-            if EXPORT and exists(EXPORT):
-                fn = join(EXPORT, str(thread.id) + ".md")
-                with open(fn, "w", encoding='utf-8') as fl:
-                    fl.write(str(concept))
+    
     print("Done processing all channels.")
 
 
