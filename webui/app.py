@@ -8,7 +8,12 @@ queue = None
 
 @route('/')
 def index():
-    display = []
+    display = [
+        """<form action="/refresh_concepts" method="post">
+            <input type="hidden" name="concept_id" value="-1">
+            <input type="submit" value="(Re)load links/media">
+        </form>"""
+    ]
     for c in concepts.values():
         if c.id not in source_ids:
             display.append(f"<a href=\"{c.id}\">\
@@ -42,7 +47,7 @@ def channel(id):
             return f"""
             <form action="/refresh_concept" method="post">
                 <input type="hidden" name="concept_id" value="{id}">
-                <input type="submit" value="Refresh Concept">
+                <input type="submit" value="(Re)load links/media">
             </form>
             <div style="height: 100vh; overflow: auto;">
                 ------parent------<br><br>{markdown(str(concept))}

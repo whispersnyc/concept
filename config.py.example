@@ -1,15 +1,24 @@
-HTTP_allowed = True
-
-
-## Discord Bot configuration
+## Discord Bot 
 
 # [YourBot > Bot > Token] in discord.com/developers/applications
 TOKEN = "XXXXXXXXXXXXXXXXXXXXXX"
-
 # Enable Developer Mode then  right-click channel > Copy Channel ID
 CHANNELS = [1234567890, 1234567890]
+# Prevent processing all messages at start
+LAZY_LOADING = False
 
 
 ## Markdown export
 
-EXPORT = "D:/Path/To/Folder"
+# Empty string or False to disable
+EXPORT_PATH = "D:/Path/To/Folder"
+# Fetch data from md files for faster load
+EXPORT_AS_CACHE = False
+
+
+## Hyperlink titles
+
+# Replace links with their tab titles
+FETCH_LINK_TITLES = False
+# Use HTTP as fallback
+HTTP_ALLOWED = True

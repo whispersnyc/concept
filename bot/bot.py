@@ -1,10 +1,8 @@
-from concept import Concept
-from config import *
+from config import TOKEN, CHANNELS, LAZY_LOADING, EXPORT_AS_CACHE
 import discord
-from os.path import exists, join
 from hyperlink import Hyperlink, extractor
 from asyncio import sleep
-
+from concept import Concept
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -13,7 +11,7 @@ concepts, source_ids = {}, []
 queue = None
 
 
-def refresh(id="index"): print("Refresh", id)
+def refresh(id): print("Refresh", "index" if id == -1 else id)
     
 
 async def create_concept(thread, from_forum):
@@ -31,13 +29,6 @@ async def create_concept(thread, from_forum):
         except Exception as e: print(thread.name, e)
     
     return concept
-    
-
-def export(concept):
-    if EXPORT and exists(EXPORT):
-        fn = join(EXPORT, str(concept.id) + ".md")
-        with open(fn, "w", encoding='utf-8') as fl:
-            fl.write(str(concept))
 
 
 def sort_link(concept, link):
@@ -59,7 +50,7 @@ async def process_messages(concept=None, thread=None, id=None):
         for fl in msg.attachments:
             sort_link(concept, Hyperlink(fl.url,
                 fl.filename, fl.content_type, msg.id))
-    export(concept)
+    concept.export()
 
 
 async def process_all_channels(lazy_load=LAZY_LOADING):
@@ -71,14 +62,18 @@ async def process_all_channels(lazy_load=LAZY_LOADING):
             continue
 
         for thread in channel.threads:
-            forum = isinstance(channel, discord.ForumChannel)
+            if EXPORT_AS_CACHE:
+                concepts[thread.id] = (
+                    Concept.parse_markdown(thread.id))
+                continue
+            from_forum = isinstance(channel, discord.ForumChannel)
             concept = concepts[thread.id] = (
-                await create_concept(thread, forum))
+                await create_concept(thread, from_forum))
             if concept.source:
                 source_ids.append(concept.source)
             if not lazy_load:
                 await process_messages(concept, thread)
-            export(concept)
+            concept.export()
     
     print("Done processing all channels.")
 
@@ -90,7 +85,10 @@ async def check_queue():
             print(message, data)
             if message == "refresh_concept":
                 concept_id = int(data)
-                await process_messages(id=concept_id)
+                if concept_id == -1:
+                    await process_all_channels(False)
+                else:
+                    await process_messages(id=concept_id)
                 if LAZY_LOADING: refresh(concept_id)
         await sleep(1)
 
@@ -100,7 +98,7 @@ async def on_ready():
     print(f'We have logged in as {client.user}')
     client.loop.create_task(check_queue())
     await process_all_channels()
-    refresh()
+    refresh(-1)
 
 
 def run_bot(message_queue):

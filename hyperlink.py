@@ -4,7 +4,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from bs4 import BeautifulSoup
 from urlextract import URLExtract
-from config import HTTP_allowed
+from config import HTTP_ALLOWED, FETCH_LINK_TITLES
 import mimetypes
 
 extractor = URLExtract().find_urls
@@ -23,6 +23,8 @@ class Hyperlink():
 
     def get_title(self):
         """Fetches the title of the webpage at the URL."""
+        if not FETCH_LINK_TITLES: return self.url
+
         if self.url in Hyperlink.title_cache:
             return Hyperlink.title_cache[self.url]
 
@@ -45,7 +47,7 @@ class Hyperlink():
             soup = BeautifulSoup(response.text, 'html.parser')
             Hyperlink.title_cache[self.url] = soup.title.string if soup.title else self.url
         except SSLError:
-            if HTTP_allowed:
+            if HTTP_ALLOWED:
                 self.url = self.url.replace('https://', 'http://')
                 try:
                     response = session.get(self.url)
