@@ -77,7 +77,7 @@ async def process_all_channels(lazy_load=LAZY_LOADING):
             if concept.source:
                 source_ids.append(concept.source)
             if not lazy_load:
-                process_messages(concept, thread)
+                await process_messages(concept, thread)
             export(concept)
     
     print("Done processing all channels.")
