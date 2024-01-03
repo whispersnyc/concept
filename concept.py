@@ -1,7 +1,12 @@
-import re
+import appdirs
+import pickle
 from config import EXPORT_PATH
+from os import makedirs
 from os.path import exists, join
 from hyperlink import Hyperlink
+
+
+CACHE_DIR = appdirs.user_cache_dir(appname='Concept')
 
 
 class Concept:
@@ -24,7 +29,7 @@ class Concept:
         self.media = media
 
         self._str = None
-        self._file = join(EXPORT, str(id)+'.md')
+        self._file = join(EXPORT_PATH, str(id)+'.md')
 
 
     def __str__(self):
@@ -61,40 +66,21 @@ class Concept:
         return ret
     
 
-    def export(self):
+    def export(self, cache=False):
         if EXPORT_PATH and exists(EXPORT_PATH):
             with open(self._file, 'w', encoding='utf-8') as fl:
                 fl.write(self.__str__())
-    
+
+        if cache:
+            makedirs(CACHE_DIR, exist_ok=True)
+            with open(join(CACHE_DIR, str(self.id) + '.pickle'), 'wb') as fl:
+                pickle.dump(self, fl)
+
 
     @classmethod
-    def parse_markdown(cls, id):
-        with open(join(EXPORT, str(id)+'.md'), 'r', encoding='utf-8') as f:
-            content = f.read()
-
-        # Parse the concept
-        concept_match = re.match(r'\[(.*?) >> #(.*?)] (POST|THREAD) (\d+): (.*?) ', content)
-        category, channel, post_or_thread, id, name = concept_match.groups()
-        from_forum = post_or_thread == 'POST'
-
-        # Parse the source thread
-        source_match = re.search(r'Source Thread: \[\[(.*?)\]\]', content)
-        source = source_match.group(1) if source_match else None
-
-        # Parse the sites
-        sites = []
-        sites_section = re.search(r'## Sites\n(.*?)\n\n', content, re.DOTALL)
-        if sites_section:
-            sites_matches = re.findall(r'- \[(.*?)\]\((.*?)\)', sites_section.group(1))
-            for title, url in sites_matches:
-                sites.append(Hyperlink(title, url))  # assuming Hyperlink takes title and url as arguments
-
-        # Parse the media
-        media = []
-        media_section = re.search(r'## Media\n<table>\n(.*?)\n</table>', content, re.DOTALL)
-        if media_section:
-            media_matches = re.findall(r'src="(.*?)"', media_section.group(1))
-            for url in media_matches:
-                media.append(Hyperlink(url, url))  # assuming Hyperlink takes title and url as arguments
-
-        return Concept(id, name, channel, category, from_forum, source, sites, media)
+    def cached(cls, id):
+        cache_file = join(CACHE_DIR, str(id)+'.pickle')
+        if exists(cache_file):
+            with open(cache_file, 'rb') as fl:
+                return pickle.load(fl)
+        else: return None

@@ -15,9 +15,13 @@ class Hyperlink():
 
     def __init__(self, url, title=None, type=None, source=None):
         self.url = url
-        self.title = title if title else self.get_title()
+        self.title = title
         self.type = type if type else self.get_type()
         self.source = source
+        
+        if not title or title == url:
+            self.title = self.get_title()
+        
 
     def __str__(self): return self.url
 

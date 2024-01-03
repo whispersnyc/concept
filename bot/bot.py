@@ -1,4 +1,4 @@
-from config import TOKEN, CHANNELS, LAZY_LOADING, EXPORT_AS_CACHE
+from config import TOKEN, CHANNELS, LAZY_LOADING, CACHE
 import discord
 from hyperlink import Hyperlink, extractor
 from asyncio import sleep
@@ -50,7 +50,7 @@ async def process_messages(concept=None, thread=None, id=None):
         for fl in msg.attachments:
             sort_link(concept, Hyperlink(fl.url,
                 fl.filename, fl.content_type, msg.id))
-    concept.export()
+    concept.export(CACHE)
 
 
 async def process_all_channels(lazy_load=LAZY_LOADING):
@@ -62,9 +62,8 @@ async def process_all_channels(lazy_load=LAZY_LOADING):
             continue
 
         for thread in channel.threads:
-            if EXPORT_AS_CACHE:
-                concepts[thread.id] = (
-                    Concept.parse_markdown(thread.id))
+            if CACHE and (cached := Concept.cached(thread.id)):
+                concepts[thread.id] = cached
                 continue
             from_forum = isinstance(channel, discord.ForumChannel)
             concept = concepts[thread.id] = (
@@ -73,7 +72,7 @@ async def process_all_channels(lazy_load=LAZY_LOADING):
                 source_ids.append(concept.source)
             if not lazy_load:
                 await process_messages(concept, thread)
-            concept.export()
+            concept.export(CACHE)
     
     print("Done processing all channels.")
 

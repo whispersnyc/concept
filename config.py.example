@@ -13,7 +13,7 @@ LAZY_LOADING = False
 # Empty string or False to disable
 EXPORT_PATH = "D:/Path/To/Folder"
 # Fetch data from md files for faster load
-EXPORT_AS_CACHE = False
+CACHE = False
 
 
 ## Hyperlink titles
