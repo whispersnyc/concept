@@ -1,4 +1,4 @@
-from config import TOKEN, CHANNELS, LAZY_LOADING, CACHE
+from config import TOKEN, CHANNELS, LAZY_LOADING, CACHE, IDEA_CHANNEL
 import discord
 from hyperlink import Hyperlink, extractor
 from asyncio import sleep
@@ -8,7 +8,7 @@ intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
 concepts, source_ids = {}, []
-queue = None
+queue, idea_channel = None, None
 
 
 def refresh(id): print("Refresh", "index" if id == -1 else id)
@@ -61,7 +61,9 @@ async def process_all_channels(lazy_load=LAZY_LOADING):
             print(f"Could not find channel {channel_id}")
             continue
 
-        for thread in channel.threads:
+        archived = [t async for t in 
+            channel.archived_threads(limit=None)]
+        for thread in list(channel.threads) + archived:
             if CACHE and (cached := Concept.cached(thread.id)):
                 concepts[thread.id] = cached
                 continue
@@ -89,15 +91,21 @@ async def check_queue():
                 else:
                     await process_messages(id=concept_id)
                 if LAZY_LOADING: refresh(concept_id)
+            elif message == "new_idea":
+                if idea_channel:
+                    await idea_channel.send(data)
         await sleep(1)
 
 
 @client.event
 async def on_ready():
+    global idea_channel
     print(f'We have logged in as {client.user}')
     client.loop.create_task(check_queue())
     await process_all_channels()
     refresh(-1)
+    idea_channel = client.get_channel(IDEA_CHANNEL)
+
 
 
 def run_bot(message_queue):

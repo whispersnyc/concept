@@ -6,6 +6,8 @@ TOKEN = "XXXXXXXXXXXXXXXXXXXXXX"
 CHANNELS = [1234567890, 1234567890]
 # Prevent processing all messages at start
 LAZY_LOADING = False
+# Channel to send new ideas in via input field
+IDEA_CHANNEL = 1181491025047474276
 
 
 ## Markdown export

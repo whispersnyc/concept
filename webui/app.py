@@ -6,10 +6,15 @@ from time import sleep
 complete = []
 queue = None
 
+
 @route('/')
 def index():
     display = [
-        """<form action="/refresh_concepts" method="post">
+        """<form action="/new_idea" method="post">
+            <input type="text" name="idea" placeholder="Enter your new idea here">
+            <input type="submit" value="Submit Idea">
+        </form>
+        <form action="/refresh_concept" method="post">
             <input type="hidden" name="concept_id" value="-1">
             <input type="submit" value="(Re)load links/media">
         </form>"""
@@ -61,10 +66,19 @@ def refresh_concept():
     if source_id := request.forms.get('source_id'):
         queue.put(('refresh_concept', source_id))
     
+    if concept_id == '-1': return redirect('/')
     return redirect(f'/{concept_id}')
+
+
+@route('/new_idea', method='POST')
+def new_idea():
+    idea = request.forms.get('idea')
+    queue.put(('new_idea', idea))
+    return redirect('/')
+
 
 
 def run_webui(message_queue):
     global queue
     queue = message_queue
-    run_web(host='localhost', port=8080, quiet=True)
+    run_web(host='0.0.0.0', port=8080, quiet=True)
