@@ -41,7 +41,7 @@ def sort_link(concept, link):
 async def process_messages(concept=None, thread=None, id=None):
     """Process hyperlinks in text channel"""
     if not concept: concept = concepts[id]
-    if not thread: thread = client.get_channel(id)
+    if not thread: thread = await client.fetch_channel(id)
 
     concept.sites, concept.media = [], []
     async for msg in thread.history(limit=None):
