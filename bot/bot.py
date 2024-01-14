@@ -43,13 +43,14 @@ async def process_messages(concept=None, thread=None, id=None):
     if not concept: concept = concepts[id]
     if not thread: thread = await client.fetch_channel(id)
 
-    concept.sites, concept.media = [], []
+    concept.sites, concept.media, concept.pinned = [], [], []
     async for msg in thread.history(limit=None):
         for url in extractor(msg.content):
             sort_link(concept, Hyperlink(url))
         for fl in msg.attachments:
             sort_link(concept, Hyperlink(fl.url,
                 fl.filename, fl.content_type, msg.id))
+        if msg.pinned: concept.pinned.append(msg.content)
     concept.export(CACHE)
 
 
