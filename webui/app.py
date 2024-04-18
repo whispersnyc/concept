@@ -1,5 +1,6 @@
 from bottle import run as run_web, route, request, redirect
 from bot.bot import concepts, source_ids
+from .tables import generate_link_table, generate_media_table
 from markdown import markdown
 from time import sleep
 
@@ -30,34 +31,32 @@ def index():
 @route('/<id:int>')
 def channel(id):
     if id in concepts:
-        concept = concepts[id]
+        concept, source = concepts[id], None
+        source_html = '<input type="hidden" name="source_id" value="%s">'
+
         if concept.source in concepts:
             source = concepts[concept.source]
-            return f"""
-            <form action="/refresh_concept" method="post">
-                <input type="hidden" name="concept_id" value="{id}">
-                <input type="hidden" name="source_id" value="{source.id}">
-                <input type="submit" value="(Re)load links/media">
-            </form>
-            <div style="display: flex; height: 100vh;">
-                <div style="width: 50%; overflow: auto;">
-                    ------parent------<br><br>{markdown(str(concept))}
-                </div>
-                <div style="width: 50%; overflow: auto;">
-                    ------source------<br><br>{markdown(str(source))}
-                </div>
+            source_html = source_html.replace('%s', str(source.id))
+
+        link_table = generate_link_table(concept, source)
+        media_table = generate_media_table(concept, source)
+
+        return f"""
+        <div style="display: flex; height: 100vh;">
+            <div style="width: 50%; overflow: auto; display: flex; flex-wrap: wrap;">
+                <form action="/refresh_concept" method="post" style="width: 100%;">
+                    <input type="hidden" name="concept_id" value="{id}">
+                    {source_html}
+                    <input type="submit" value="(Re)load links/media">
+                </form>
+                {markdown(str(concept))}
+                <div style="width: 100%;">------links------<br><br>{link_table}</div>
             </div>
-            """
-        else:
-            return f"""
-            <form action="/refresh_concept" method="post">
-                <input type="hidden" name="concept_id" value="{id}">
-                <input type="submit" value="(Re)load links/media">
-            </form>
-            <div style="height: 100vh; overflow: auto;">
-                ------parent------<br><br>{markdown(str(concept))}
+            <div style="width: 50%; overflow: auto; display: flex; flex-wrap: wrap;">
+                <div style="width: 100%;">------media------<br><br>{media_table}</div>
             </div>
-            """
+        </div>
+        """
 
 @route('/refresh_concept', method='POST')
 def refresh_concept():

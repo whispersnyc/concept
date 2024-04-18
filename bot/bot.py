@@ -1,8 +1,9 @@
-from config import TOKEN, CHANNELS, LAZY_LOADING, CACHE, IDEA_CHANNEL
+from config import TOKEN, CHANNELS, LAZY_LOADING, CACHE, IDEA_CHANNEL, DEBUG_THREADS
 import discord
 from hyperlink import Hyperlink, extractor
 from asyncio import sleep
 from concept import Concept
+import re
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -20,8 +21,8 @@ async def create_concept(thread, from_forum):
                       thread.parent.category.name)
 
     if from_forum: # fetch and set post/source
-        concept.post = (await thread.fetch_message(thread.id)).content
         try: # find/remove <#...> in post (text channel id)
+            concept.post = (await thread.fetch_message(thread.id)).content
             if (txt := concept.post.strip()).startswith('<#'):
                 source, txt = txt[2:].split('>', 1)
                 source, concept.post = int(source), txt.strip()
@@ -46,6 +47,8 @@ async def process_messages(concept=None, thread=None, id=None):
     concept.sites, concept.media, concept.pinned = [], [], []
     async for msg in thread.history(limit=None):
         for url in extractor(msg.content):
+            if re.match(r'.*://discord\.com/channels/.*', url):
+                continue
             sort_link(concept, Hyperlink(url))
         for fl in msg.attachments:
             sort_link(concept, Hyperlink(fl.url,
@@ -57,16 +60,24 @@ async def process_messages(concept=None, thread=None, id=None):
 async def process_all_channels(lazy_load=LAZY_LOADING):
     """Processes all channels and sorts their links."""
     for channel_id in CHANNELS:
+
         channel = client.get_channel(channel_id)
         if channel is None:
             print(f"Could not find channel {channel_id}")
             continue
+        print("Channel: ", channel.name)
 
         archived = [t async for t in 
             channel.archived_threads(limit=None)]
         for thread in list(channel.threads) + archived:
+            if DEBUG_THREADS and not (thread.id in DEBUG_THREADS):
+                print(f"Skipping channel {thread.id}")
+                continue
+
+            print("Thread: ", thread.name)
             if CACHE and (cached := Concept.cached(thread.id)):
                 concepts[thread.id] = cached
+                source_ids.append(cached.source)
                 continue
             from_forum = isinstance(channel, discord.ForumChannel)
             concept = concepts[thread.id] = (
@@ -106,7 +117,6 @@ async def on_ready():
     await process_all_channels()
     refresh(-1)
     idea_channel = client.get_channel(IDEA_CHANNEL)
-
 
 
 def run_bot(message_queue):

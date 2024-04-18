@@ -1,5 +1,5 @@
 import appdirs
-import pickle
+import json
 from config import EXPORT_PATH
 from os import makedirs
 from os.path import exists, join
@@ -43,29 +43,60 @@ class Concept:
             ret += f"\n\nSource Thread: [[{self.source}]]"
 
         if self.post:
-            ret += '\n\n## Post\n' + str(self.post)
+            ret += '\n' + str(self.post)
         if self.pinned:
             ret += '\n- '.join((['\n\n## Pinned'] + self.pinned))
-        if self.sites:
-            ret += '\n\n## Sites\n'
-            for link in self.sites:
-                ret += f"- [{link.title}]({link})\n"
-        if self.media:
-            ret += self._generate_media_table()
         
         return ret
+    
+    def __dict__(self):
+        """Convert the Concept object to a dictionary."""
+        data = {
+            'id': self.id,
+            'name': self.name,
+            'channel': self.channel,
+            'category': self.category,
+            'sites': [site.__dict__() for site in self.sites],
+            'media': [media.__dict__() for media in self.media],
+            'source': self.source
+        }
+        return data
 
+    @classmethod
+    def from_dict(cls, data):
+        """Create a Concept object from a dictionary."""
+        concept = cls(
+            id=data.get('id'),
+            name=data.get('name'),
+            channel=data.get('channel'),
+            category=data.get('category'),
+            # other attributes...
+        )
+        concept.sites = [Hyperlink.from_dict(site) for site in data.get('sites', [])]
+        concept.media = [Hyperlink.from_dict(media) for media in data.get('media', [])]
+        concept.source = data['source']
+        return concept
 
-    def _generate_media_table(self):
-        ret = '\n\n## Media\n<table>\n<tr>\n'
+    def dont_generate_link_table(self):
+        """Generate a table of links."""
+        ret = '\n<table>\n<tr>\n'
+        for count, link in enumerate(self.sites):
+            if count % 3 == 0 and count != 0:  # between rows
+                ret += '</tr>\n<tr>\n'
+            ret += f'<td><a href="{link.url}">{link.title}</a></td>\n'
+        ret += '</tr>\n</table>\n'
+        return ret
+    
+    def dont_generate_media_table(self):
+        """Generate a table of media."""
+        ret = '\n<table>\n<tr>\n'
         for count, link in enumerate(self.media):
             if count % 3 == 0 and count != 0:  # between rows
                 ret += '</tr>\n<tr>\n'
             if link.type.startswith("image/"):
-                ret += f'<td><img src="{link}" width="200"/></td>\n'
+                ret += f'<td><img src="{link.url}" width="200"/></td>\n'
             elif link.type.startswith("video/"):
-                ret += f'<td><video src="{link}" width="200" controls>\
-                         </video></td>\n'
+                ret += f'<td><video src="{link.url}" width="200" controls></video></td>\n'
         ret += '</tr>\n</table>\n'
         return ret
     
@@ -77,14 +108,17 @@ class Concept:
 
         if cache:
             makedirs(CACHE_DIR, exist_ok=True)
-            with open(join(CACHE_DIR, str(self.id) + '.pickle'), 'wb') as fl:
-                pickle.dump(self, fl)
+            with open(join(CACHE_DIR, str(self.id) + '.json'), 'w', encoding='utf-8') as fl:
+                json.dump(self.__dict__(), fl)
 
 
     @classmethod
     def cached(cls, id):
-        cache_file = join(CACHE_DIR, str(id)+'.pickle')
+        cache_file = join(CACHE_DIR, str(id)+'.json')
         if exists(cache_file):
-            with open(cache_file, 'rb') as fl:
-                return pickle.load(fl)
-        else: return None
+            with open(cache_file, 'r', encoding='utf-8') as fl:
+                data = json.load(fl)
+            return cls.from_dict(data)
+        else:
+            return None
+        
