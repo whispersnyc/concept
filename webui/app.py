@@ -41,6 +41,10 @@ def channel(id):
         link_table = generate_link_table(concept, source)
         media_table = generate_media_table(concept, source)
 
+        msgs = "\n".join(concept.msgs)
+        if source: msgs += "\n" + "\n".join(source.msgs)
+        msgs = msgs.replace('\n\n\n', '').replace('\n', '<br><br>')
+
         return f"""
         <div style="display: flex; height: 100vh;">
             <div style="width: 50%; overflow: auto; display: flex; flex-wrap: wrap;">
@@ -49,8 +53,11 @@ def channel(id):
                     {source_html}
                     <input type="submit" value="(Re)load links/media">
                 </form>
-                {markdown(str(concept))}
+                {markdown(str(concept).replace('\n', '<br>'))}
                 <div style="width: 100%;">------links------<br><br>{link_table}</div>
+                <div style="width: 100%; height: 500px; overflow-y: auto;">
+                    ------messages------<br><br>{msgs}
+                </div>
             </div>
             <div style="width: 50%; overflow: auto; display: flex; flex-wrap: wrap;">
                 <div style="width: 100%;">------media------<br><br>{media_table}</div>
@@ -80,4 +87,4 @@ def new_idea():
 def run_webui(message_queue):
     global queue
     queue = message_queue
-    run_web(host='0.0.0.0', port=8080, quiet=True)
+    run_web(host='192.168.196.185', port=80, quiet=True)

@@ -14,7 +14,7 @@ class Concept:
 
 
     def __init__(self, id, name, channel, category,
-                 post=None, source=None, sites=None, media=None, pinned=None):
+                 post=None, source=None, sites=None, media=None, pinned=None, msgs=None):
         if not sites: sites = []
         if not media: media = []
         if not pinned: pinned = []
@@ -29,6 +29,7 @@ class Concept:
         self.sites = sites
         self.media = media
         self.pinned = pinned
+        self.msgs = msgs
 
         self._str = None
         self._file = join(EXPORT_PATH, str(id)+'.md')

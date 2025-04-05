@@ -44,16 +44,21 @@ async def process_messages(concept=None, thread=None, id=None):
     if not concept: concept = concepts[id]
     if not thread: thread = await client.fetch_channel(id)
 
-    concept.sites, concept.media, concept.pinned = [], [], []
+    concept.sites, concept.media, concept.msgs, concept.pinned = [], [], [], []
     async for msg in thread.history(limit=None):
-        for url in extractor(msg.content):
+        auth = f"**{msg.author.display_name}**: "
+        content = msg.content
+        for url in extractor(content):
             if re.match(r'.*://discord\.com/channels/.*', url):
                 continue
             sort_link(concept, Hyperlink(url))
+            # remove url from content
+            content = content.replace(url, '').strip()
+        if content != '': concept.msgs.append(auth+content)
         for fl in msg.attachments:
             sort_link(concept, Hyperlink(fl.url,
                 fl.filename, fl.content_type, msg.id))
-        if msg.pinned: concept.pinned.append(msg.content)
+        if msg.pinned: concept.pinned.append(auth+msg.content)
     concept.export(CACHE)
 
 
